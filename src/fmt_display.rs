@@ -1,5 +1,6 @@
 use core::fmt::{self, Debug, Display, Formatter};
 
+/// [`Debug`] or [`Display`] a value based on its [`Display`] implementation.
 pub struct FmtDisplay<T>
 where
     T: ?Sized,
@@ -31,7 +32,11 @@ where
     }
 }
 
-pub const fn fmt_display<T>(value: T) -> FmtDisplay<T> {
+/// Creates an object that [`Debug`] or [`Display`] `value` based on its [`Display`] implementation.
+pub const fn fmt_display<T>(value: T) -> FmtDisplay<T>
+where
+    T: Display,
+{
     FmtDisplay::new(value)
 }
 

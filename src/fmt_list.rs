@@ -1,20 +1,21 @@
 use crate::fmt_display;
 use core::fmt::{self, Debug, Display, Formatter};
 
-pub struct FmtList<F>
+/// [`Debug`] or [`Display`] a list of [`Debug`] objects as a list.
+pub struct FmtDebugList<F>
 where
     F: ?Sized,
 {
     values_fn: F,
 }
 
-impl<F> FmtList<F> {
+impl<F> FmtDebugList<F> {
     const fn new(values_fn: F) -> Self {
         Self { values_fn }
     }
 }
 
-impl<F, I> Debug for FmtList<F>
+impl<F, I> Debug for FmtDebugList<F>
 where
     F: Fn() -> I + ?Sized,
     I: IntoIterator,
@@ -27,7 +28,33 @@ where
     }
 }
 
-impl<F, I> Display for FmtList<F>
+/// [`Debug`] or [`Display`] a list of [`Display`] objects as a list.
+impl<F, I> Display for FmtDebugList<F>
+where
+    F: Fn() -> I + ?Sized,
+    I: IntoIterator,
+    I::Item: Debug,
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+/// [`Debug`] or [`Display`] a list of [`Display`] objects as a list.
+pub struct FmtDisplayList<F>
+where
+    F: ?Sized,
+{
+    values_fn: F,
+}
+
+impl<F> FmtDisplayList<F> {
+    const fn new(values_fn: F) -> Self {
+        Self { values_fn }
+    }
+}
+
+impl<F, I> Debug for FmtDisplayList<F>
 where
     F: Fn() -> I + ?Sized,
     I: IntoIterator,
@@ -40,35 +67,40 @@ where
     }
 }
 
-pub const fn fmt_list<F, I>(values_fn: F) -> FmtList<F>
+impl<F, I> Display for FmtDisplayList<F>
 where
-    F: Fn() -> I,
+    F: Fn() -> I + ?Sized,
     I: IntoIterator,
+    I::Item: Display,
 {
-    FmtList::new(values_fn)
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
 }
 
-pub const fn debug_fmt_list<F, I>(values_fn: F) -> FmtList<F>
+/// Creates an object that [`Debug`] or [`Display`] a list of [`Debug`] objects as a list.
+pub const fn fmt_debug_list<F, I>(values_fn: F) -> FmtDebugList<F>
 where
     F: Fn() -> I,
     I: IntoIterator,
     I::Item: Debug,
 {
-    fmt_list(values_fn)
+    FmtDebugList::new(values_fn)
 }
 
-pub const fn display_fmt_list<F, I>(values_fn: F) -> FmtList<F>
+/// Creates an object that [`Debug`] or [`Display`] a list of [`Display`] objects as a list.
+pub const fn fmt_display_list<F, I>(values_fn: F) -> FmtDisplayList<F>
 where
     F: Fn() -> I,
     I: IntoIterator,
     I::Item: Display,
 {
-    fmt_list(values_fn)
+    FmtDisplayList::new(values_fn)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::FmtList;
+    use super::{FmtDebugList, FmtDisplayList};
     use core::fmt::{self, Display, Formatter};
 
     #[test]
@@ -84,8 +116,8 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_list = super::debug_fmt_list(|| values);
-            let unsized_fmt_list: &FmtList<dyn Fn() -> &'static [Foo]> = &fmt_list;
+            let fmt_list = super::fmt_debug_list(|| values);
+            let unsized_fmt_list: &FmtDebugList<dyn Fn() -> &'static [Foo]> = &fmt_list;
 
             assert_eq!(std::format!("{:?}", fmt_list), expected);
             assert_eq!(std::format!("{:?}", unsized_fmt_list), expected);
@@ -110,8 +142,8 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_list = super::display_fmt_list(|| values);
-            let unsized_fmt_list: &FmtList<dyn Fn() -> &'static [Foo]> = &fmt_list;
+            let fmt_list = super::fmt_display_list(|| values);
+            let unsized_fmt_list: &FmtDisplayList<dyn Fn() -> &'static [Foo]> = &fmt_list;
 
             assert_eq!(std::format!("{}", fmt_list), expected);
             assert_eq!(std::format!("{}", unsized_fmt_list), expected);

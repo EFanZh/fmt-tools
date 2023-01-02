@@ -1,20 +1,21 @@
 use crate::{fmt_display, FmtDisplay};
 use core::fmt::{self, Debug, Display, Formatter};
 
-pub struct FmtMap<F>
+/// [`Debug`] or [`Display`] a list of `(Debug, Debug)` objects as a map.
+pub struct FmtDebugMap<F>
 where
     F: ?Sized,
 {
     values_fn: F,
 }
 
-impl<F> FmtMap<F> {
+impl<F> FmtDebugMap<F> {
     const fn new(values_fn: F) -> Self {
         Self { values_fn }
     }
 }
 
-impl<F, I, K, V> Debug for FmtMap<F>
+impl<F, I, K, V> Debug for FmtDebugMap<F>
 where
     F: Fn() -> I + ?Sized,
     I: IntoIterator<Item = (K, V)>,
@@ -28,7 +29,33 @@ where
     }
 }
 
-impl<F, I, K, V> Display for FmtMap<F>
+impl<F, I, K, V> Display for FmtDebugMap<F>
+where
+    F: Fn() -> I + ?Sized,
+    I: IntoIterator<Item = (K, V)>,
+    K: Debug,
+    V: Debug,
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+/// [`Debug`] or [`Display`] a list of `(Display, Display)` objects as a map.
+pub struct FmtDisplayMap<F>
+where
+    F: ?Sized,
+{
+    values_fn: F,
+}
+
+impl<F> FmtDisplayMap<F> {
+    const fn new(values_fn: F) -> Self {
+        Self { values_fn }
+    }
+}
+
+impl<F, I, K, V> Debug for FmtDisplayMap<F>
 where
     F: Fn() -> I + ?Sized,
     I: IntoIterator<Item = (K, V)>,
@@ -36,47 +63,57 @@ where
     V: Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        fn display_tuple_as_debug_tuple<K, V>((key, value): (K, V)) -> (FmtDisplay<K>, FmtDisplay<V>) {
+        fn display_as_debug<K, V>((key, value): (K, V)) -> (FmtDisplay<K>, FmtDisplay<V>)
+        where
+            K: Display,
+            V: Display,
+        {
             (fmt_display::fmt_display(key), fmt_display::fmt_display(value))
         }
 
-        let entries = (self.values_fn)().into_iter().map(display_tuple_as_debug_tuple);
+        let entries = (self.values_fn)().into_iter().map(display_as_debug);
 
         f.debug_map().entries(entries).finish()
     }
 }
 
-pub const fn fmt_map<F, I, K, V>(values_fn: F) -> FmtMap<F>
+impl<F, I, K, V> Display for FmtDisplayMap<F>
 where
-    F: Fn() -> I,
+    F: Fn() -> I + ?Sized,
     I: IntoIterator<Item = (K, V)>,
+    K: Display,
+    V: Display,
 {
-    FmtMap::new(values_fn)
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
 }
 
-pub const fn debug_fmt_map<F, I, K, V>(values_fn: F) -> FmtMap<F>
+/// Creates an object that [`Debug`] or [`Display`] a list of `(Debug, Debug)` objects as a map.
+pub const fn fmt_debug_map<F, I, K, V>(values_fn: F) -> FmtDebugMap<F>
 where
     F: Fn() -> I,
     I: IntoIterator<Item = (K, V)>,
     K: Debug,
     V: Debug,
 {
-    fmt_map(values_fn)
+    FmtDebugMap::new(values_fn)
 }
 
-pub const fn display_fmt_map<F, I, K, V>(values_fn: F) -> FmtMap<F>
+/// Creates an object that [`Debug`] or [`Display`] a list of `(Display, Display)` objects as a map.
+pub const fn fmt_display_map<F, I, K, V>(values_fn: F) -> FmtDisplayMap<F>
 where
     F: Fn() -> I,
     I: IntoIterator<Item = (K, V)>,
     K: Display,
     V: Display,
 {
-    fmt_map(values_fn)
+    FmtDisplayMap::new(values_fn)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::FmtMap;
+    use super::{FmtDebugMap, FmtDisplayMap};
     use core::fmt::{self, Display, Formatter};
 
     #[test]
@@ -95,8 +132,8 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_map = super::debug_fmt_map(|| values.iter().map(|(key, value)| (key, value)));
-            let unsized_fmt_map: &FmtMap<dyn Fn() -> _> = &fmt_map;
+            let fmt_map = super::fmt_debug_map(|| values.iter().map(|(key, value)| (key, value)));
+            let unsized_fmt_map: &FmtDebugMap<dyn Fn() -> _> = &fmt_map;
 
             assert_eq!(std::format!("{:?}", fmt_map), expected);
             assert_eq!(std::format!("{:?}", unsized_fmt_map), expected);
@@ -129,8 +166,8 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_map = super::display_fmt_map(|| values.iter().map(|(key, value)| (key, value)));
-            let unsized_fmt_map: &FmtMap<dyn Fn() -> _> = &fmt_map;
+            let fmt_map = super::fmt_display_map(|| values.iter().map(|(key, value)| (key, value)));
+            let unsized_fmt_map: &FmtDisplayMap<dyn Fn() -> _> = &fmt_map;
 
             assert_eq!(std::format!("{}", fmt_map), expected);
             assert_eq!(std::format!("{}", unsized_fmt_map), expected);

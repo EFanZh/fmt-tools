@@ -1,5 +1,6 @@
 use core::fmt::{self, Debug, Display, Formatter};
 
+/// [`Debug`] or [`Display`] a value based on a function.
 pub struct FmtFn<F>
 where
     F: ?Sized,
@@ -31,6 +32,7 @@ where
     }
 }
 
+/// Creates an object that [`Debug`] or [`Display`] a value based on the `f` function.
 pub const fn fmt_fn<F>(f: F) -> FmtFn<F>
 where
     F: Fn(&mut Formatter) -> fmt::Result,

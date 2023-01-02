@@ -1,20 +1,21 @@
 use crate::fmt_display;
 use core::fmt::{self, Debug, Display, Formatter};
 
-pub struct FmtSet<F>
+/// [`Debug`] or [`Display`] a list of [`Debug`] objects as a set.
+pub struct FmtDebugSet<F>
 where
     F: ?Sized,
 {
     values_fn: F,
 }
 
-impl<F> FmtSet<F> {
+impl<F> FmtDebugSet<F> {
     const fn new(values_fn: F) -> Self {
         Self { values_fn }
     }
 }
 
-impl<F, I> Debug for FmtSet<F>
+impl<F, I> Debug for FmtDebugSet<F>
 where
     F: Fn() -> I + ?Sized,
     I: IntoIterator,
@@ -27,7 +28,32 @@ where
     }
 }
 
-impl<F, I> Display for FmtSet<F>
+impl<F, I> Display for FmtDebugSet<F>
+where
+    F: Fn() -> I + ?Sized,
+    I: IntoIterator,
+    I::Item: Debug,
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+/// [`Debug`] or [`Display`] a list of [`Display`] objects as a set.
+pub struct FmtDisplaySet<F>
+where
+    F: ?Sized,
+{
+    values_fn: F,
+}
+
+impl<F> FmtDisplaySet<F> {
+    const fn new(values_fn: F) -> Self {
+        Self { values_fn }
+    }
+}
+
+impl<F, I> Debug for FmtDisplaySet<F>
 where
     F: Fn() -> I + ?Sized,
     I: IntoIterator,
@@ -40,35 +66,40 @@ where
     }
 }
 
-pub const fn fmt_set<F, I>(values_fn: F) -> FmtSet<F>
+impl<F, I> Display for FmtDisplaySet<F>
 where
-    F: Fn() -> I,
+    F: Fn() -> I + ?Sized,
     I: IntoIterator,
+    I::Item: Display,
 {
-    FmtSet::new(values_fn)
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        Debug::fmt(self, f)
+    }
 }
 
-pub const fn debug_fmt_set<F, I>(values_fn: F) -> FmtSet<F>
+/// Creates an object that [`Debug`] or [`Display`] a list of [`Debug`] objects as a set.
+pub const fn fmt_debug_set<F, I>(values_fn: F) -> FmtDebugSet<F>
 where
     F: Fn() -> I,
     I: IntoIterator,
     I::Item: Debug,
 {
-    fmt_set(values_fn)
+    FmtDebugSet::new(values_fn)
 }
 
-pub const fn display_fmt_set<F, I>(values_fn: F) -> FmtSet<F>
+/// Creates an object that [`Debug`] or [`Display`] a list of [`Display`] objects as a set.
+pub const fn fmt_display_set<F, I>(values_fn: F) -> FmtDisplaySet<F>
 where
     F: Fn() -> I,
     I: IntoIterator,
     I::Item: Display,
 {
-    fmt_set(values_fn)
+    FmtDisplaySet::new(values_fn)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::FmtSet;
+    use super::{FmtDebugSet, FmtDisplaySet};
     use core::fmt::{self, Display, Formatter};
 
     #[test]
@@ -84,8 +115,8 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_set = super::debug_fmt_set(|| values);
-            let unsized_fmt_set: &FmtSet<dyn Fn() -> &'static [Foo]> = &fmt_set;
+            let fmt_set = super::fmt_debug_set(|| values);
+            let unsized_fmt_set: &FmtDebugSet<dyn Fn() -> &'static [Foo]> = &fmt_set;
 
             assert_eq!(std::format!("{:?}", fmt_set), expected);
             assert_eq!(std::format!("{:?}", unsized_fmt_set), expected);
@@ -110,8 +141,8 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_set = super::display_fmt_set(|| values);
-            let unsized_fmt_set: &FmtSet<dyn Fn() -> &'static [Foo]> = &fmt_set;
+            let fmt_set = super::fmt_display_set(|| values);
+            let unsized_fmt_set: &FmtDisplaySet<dyn Fn() -> &'static [Foo]> = &fmt_set;
 
             assert_eq!(std::format!("{}", fmt_set), expected);
             assert_eq!(std::format!("{}", unsized_fmt_set), expected);
