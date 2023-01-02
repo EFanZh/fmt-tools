@@ -49,15 +49,15 @@ mod tests {
     fn test_fmt_fn() {
         let fmt_fn = super::fmt_fn(|f| f.write_str("foo"));
 
-        assert_eq!(std::format!("{:?}", fmt_fn), "foo");
-        assert_eq!(std::format!("{}", fmt_fn), "foo");
+        assert_eq!(std::format!("{fmt_fn:?}"), "foo");
+        assert_eq!(std::format!("{fmt_fn}"), "foo");
     }
 
     #[test]
     fn test_coerce_unsized() {
         let fmt_fn: &FmtFn<dyn Fn(&mut Formatter) -> fmt::Result> = &super::fmt_fn(|f| f.write_str("foo"));
 
-        assert_eq!(std::format!("{:?}", fmt_fn), "foo");
-        assert_eq!(std::format!("{}", fmt_fn), "foo");
+        assert_eq!(std::format!("{fmt_fn:?}"), "foo");
+        assert_eq!(std::format!("{fmt_fn}"), "foo");
     }
 }

@@ -56,7 +56,7 @@ mod tests {
 
         let fmt_display = super::fmt_display(Foo);
 
-        assert_eq!(std::format!("{:?}", fmt_display), "foo");
-        assert_eq!(std::format!("{}", fmt_display), "foo");
+        assert_eq!(std::format!("{fmt_display:?}"), "foo");
+        assert_eq!(std::format!("{fmt_display}"), "foo");
     }
 }

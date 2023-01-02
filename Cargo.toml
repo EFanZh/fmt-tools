@@ -1,6 +1,9 @@
 [package]
-name = "fmt-tools"
-version = "0.1.0"
+categories = ["development-tools", "no-std"]
+description = "Provides various tools for creating objects that implement `Debug` and `Display` traits."
 edition = "2021"
-
-[dependencies]
+keywords = ["fmt"]
+license = "MIT"
+name = "fmt-tools"
+repository = "https://github.com/EFanZh/fmt-tools"
+version = "0.1.0"

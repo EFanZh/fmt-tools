@@ -12,6 +12,6 @@ fn test_format_args_owned() {
         )
     };
 
-    assert_eq!(std::format!("{}", fmt), "[4], [5], 7");
-    assert_eq!(std::format!("{:?}", fmt), "[4], [5], 7");
+    assert_eq!(std::format!("{fmt}"), "[4], [5], 7");
+    assert_eq!(std::format!("{fmt:?}"), "[4], [5], 7");
 }

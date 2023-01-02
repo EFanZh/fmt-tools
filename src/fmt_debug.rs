@@ -49,7 +49,7 @@ mod tests {
 
         let fmt_debug = super::fmt_debug(Foo);
 
-        assert_eq!(std::format!("{:?}", fmt_debug), "Foo");
-        assert_eq!(std::format!("{}", fmt_debug), "Foo");
+        assert_eq!(std::format!("{fmt_debug:?}"), "Foo");
+        assert_eq!(std::format!("{fmt_debug}"), "Foo");
     }
 }

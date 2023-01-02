@@ -16,7 +16,7 @@ where
     where
         F: Sized,
     {
-        Self { values_fn, separator }
+        Self { separator, values_fn }
     }
 
     fn fmt_with<I>(
@@ -165,6 +165,7 @@ mod tests {
         #[derive(Debug)]
         struct Bar;
 
+        #[allow(trivial_casts)]
         let test_cases = [
             (&[] as &[Foo], ""),
             (&[Foo], "Foo"),
@@ -176,8 +177,8 @@ mod tests {
             let fmt = super::fmt_separated_debug_list(|| values, Bar);
             let unsized_fmt: &FmtSeparatedDebugList<dyn Fn() -> &'static [Foo], Bar> = &fmt;
 
-            assert_eq!(std::format!("{:?}", fmt), expected);
-            assert_eq!(std::format!("{:?}", unsized_fmt), expected);
+            assert_eq!(std::format!("{fmt:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt:?}"), expected);
         }
     }
 
@@ -199,6 +200,7 @@ mod tests {
             }
         }
 
+        #[allow(trivial_casts)]
         let test_cases = [
             (&[] as &[Foo], ""),
             (&[Foo], "item"),
@@ -210,8 +212,8 @@ mod tests {
             let fmt = super::fmt_separated_display_list(|| values, Bar);
             let unsized_fmt: &FmtSeparatedDisplayList<dyn Fn() -> &'static [Foo], Bar> = &fmt;
 
-            assert_eq!(std::format!("{}", fmt), expected);
-            assert_eq!(std::format!("{}", unsized_fmt), expected);
+            assert_eq!(std::format!("{fmt}"), expected);
+            assert_eq!(std::format!("{unsized_fmt}"), expected);
         }
     }
 }

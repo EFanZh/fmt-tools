@@ -68,7 +68,7 @@ where
             K: Display,
             V: Display,
         {
-            (fmt_display::fmt_display(key), fmt_display::fmt_display(value))
+            (fmt_display(key), fmt_display(value))
         }
 
         let entries = (self.values_fn)().into_iter().map(display_as_debug);
@@ -124,6 +124,7 @@ mod tests {
         #[derive(Debug)]
         struct Bar;
 
+        #[allow(trivial_casts)]
         let test_cases = [
             (&[] as &[(Foo, Bar)], "{}"),
             (&[(Foo, Bar)], "{Foo: Bar}"),
@@ -135,8 +136,8 @@ mod tests {
             let fmt_map = super::fmt_debug_map(|| values.iter().map(|(key, value)| (key, value)));
             let unsized_fmt_map: &FmtDebugMap<dyn Fn() -> _> = &fmt_map;
 
-            assert_eq!(std::format!("{:?}", fmt_map), expected);
-            assert_eq!(std::format!("{:?}", unsized_fmt_map), expected);
+            assert_eq!(std::format!("{fmt_map:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt_map:?}"), expected);
         }
     }
 
@@ -158,6 +159,7 @@ mod tests {
             }
         }
 
+        #[allow(trivial_casts)]
         let test_cases = [
             (&[] as &[(Foo, Bar)], "{}"),
             (&[(Foo, Bar)], "{foo: bar}"),
@@ -169,8 +171,8 @@ mod tests {
             let fmt_map = super::fmt_display_map(|| values.iter().map(|(key, value)| (key, value)));
             let unsized_fmt_map: &FmtDisplayMap<dyn Fn() -> _> = &fmt_map;
 
-            assert_eq!(std::format!("{}", fmt_map), expected);
-            assert_eq!(std::format!("{}", unsized_fmt_map), expected);
+            assert_eq!(std::format!("{fmt_map}"), expected);
+            assert_eq!(std::format!("{unsized_fmt_map}"), expected);
         }
     }
 }

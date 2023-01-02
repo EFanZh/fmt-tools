@@ -60,7 +60,7 @@ where
     I::Item: Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let entries = (self.values_fn)().into_iter().map(fmt_display::fmt_display);
+        let entries = (self.values_fn)().into_iter().map(fmt_display);
 
         f.debug_set().entries(entries).finish()
     }
@@ -107,6 +107,7 @@ mod tests {
         #[derive(Debug)]
         struct Foo;
 
+        #[allow(trivial_casts)]
         let test_cases = [
             (&[] as &[Foo], "{}"),
             (&[Foo], "{Foo}"),
@@ -118,8 +119,8 @@ mod tests {
             let fmt_set = super::fmt_debug_set(|| values);
             let unsized_fmt_set: &FmtDebugSet<dyn Fn() -> &'static [Foo]> = &fmt_set;
 
-            assert_eq!(std::format!("{:?}", fmt_set), expected);
-            assert_eq!(std::format!("{:?}", unsized_fmt_set), expected);
+            assert_eq!(std::format!("{fmt_set:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt_set:?}"), expected);
         }
     }
 
@@ -133,6 +134,7 @@ mod tests {
             }
         }
 
+        #[allow(trivial_casts)]
         let test_cases = [
             (&[] as &[Foo], "{}"),
             (&[Foo], "{item}"),
@@ -144,8 +146,8 @@ mod tests {
             let fmt_set = super::fmt_display_set(|| values);
             let unsized_fmt_set: &FmtDisplaySet<dyn Fn() -> &'static [Foo]> = &fmt_set;
 
-            assert_eq!(std::format!("{}", fmt_set), expected);
-            assert_eq!(std::format!("{}", unsized_fmt_set), expected);
+            assert_eq!(std::format!("{fmt_set}"), expected);
+            assert_eq!(std::format!("{unsized_fmt_set}"), expected);
         }
     }
 }
