@@ -78,6 +78,15 @@ where
 }
 
 /// Creates an object that [`Debug`] or [`Display`] a list of [`Debug`] objects as a set.
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_debug_set(|| 'a'..'g');
+///
+/// assert_eq!(format!("{fmt:?}"), "{'a', 'b', 'c', 'd', 'e', 'f'}");
+/// assert_eq!(format!("{fmt}"), "{'a', 'b', 'c', 'd', 'e', 'f'}");
+/// ```
 pub const fn fmt_debug_set<F, I>(values_fn: F) -> FmtDebugSet<F>
 where
     F: Fn() -> I,
@@ -88,6 +97,15 @@ where
 }
 
 /// Creates an object that [`Debug`] or [`Display`] a list of [`Display`] objects as a set.
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_display_set(|| 'a'..'g');
+///
+/// assert_eq!(format!("{fmt:?}"), "{a, b, c, d, e, f}");
+/// assert_eq!(format!("{fmt}"), "{a, b, c, d, e, f}");
+/// ```
 pub const fn fmt_display_set<F, I>(values_fn: F) -> FmtDisplaySet<F>
 where
     F: Fn() -> I,
@@ -116,11 +134,13 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_set = super::fmt_debug_set(|| values);
-            let unsized_fmt_set: &FmtDebugSet<dyn Fn() -> &'static [Foo]> = &fmt_set;
+            let fmt = super::fmt_debug_set(|| values);
+            let unsized_fmt: &FmtDebugSet<dyn Fn() -> &'static [Foo]> = &fmt;
 
-            assert_eq!(std::format!("{fmt_set:?}"), expected);
-            assert_eq!(std::format!("{unsized_fmt_set:?}"), expected);
+            assert_eq!(std::format!("{fmt:?}"), expected);
+            assert_eq!(std::format!("{fmt}"), expected);
+            assert_eq!(std::format!("{unsized_fmt:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt}"), expected);
         }
     }
 
@@ -143,11 +163,13 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_set = super::fmt_display_set(|| values);
-            let unsized_fmt_set: &FmtDisplaySet<dyn Fn() -> &'static [Foo]> = &fmt_set;
+            let fmt = super::fmt_display_set(|| values);
+            let unsized_fmt: &FmtDisplaySet<dyn Fn() -> &'static [Foo]> = &fmt;
 
-            assert_eq!(std::format!("{fmt_set}"), expected);
-            assert_eq!(std::format!("{unsized_fmt_set}"), expected);
+            assert_eq!(std::format!("{fmt:?}"), expected);
+            assert_eq!(std::format!("{fmt}"), expected);
+            assert_eq!(std::format!("{unsized_fmt:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt}"), expected);
         }
     }
 }

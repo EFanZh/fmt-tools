@@ -44,7 +44,7 @@ where
     }
 }
 
-/// [`Debug`] or [`Display`] a list of [`Debug`] objects, separating with another [`Debug`] object.
+/// [`Debug`] or [`Display`] a list of [`Debug`] objects with a separator that implements [`Debug`].
 pub struct FmtSeparatedDebugList<F, S>
 where
     F: ?Sized,
@@ -87,7 +87,7 @@ where
     }
 }
 
-/// [`Debug`] or [`Display`] a list of [`Display`] objects, separating with another [`Display`] object.
+/// [`Debug`] or [`Display`] a list of [`Display`] objects with a separator that implements [`Display`].
 pub struct FmtSeparatedDisplayList<F, S>
 where
     F: ?Sized,
@@ -130,7 +130,17 @@ where
     }
 }
 
-/// Creates an object that [`Debug`] or [`Display`] a list of [`Debug`] objects, separating with `separator`.
+/// Creates an object that [`Debug`] or [`Display`] a list of [`Debug`] objects with specified separator that implements
+/// [`Debug`].
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_separated_debug_list(|| 'a'..'e', '*');
+///
+/// assert_eq!(format!("{fmt:?}"), "'a''*''b''*''c''*''d'");
+/// assert_eq!(format!("{fmt}"), "'a''*''b''*''c''*''d'");
+/// ```
 pub const fn fmt_separated_debug_list<F, S, I>(values_fn: F, separator: S) -> FmtSeparatedDebugList<F, S>
 where
     F: Fn() -> I,
@@ -141,7 +151,17 @@ where
     FmtSeparatedDebugList::new(values_fn, separator)
 }
 
-/// Creates an object that [`Debug`] or [`Display`] a list of [`Display`] objects, separating with `separator`.
+/// Creates an object that [`Debug`] or [`Display`] a list of [`Display`] objects with specified separator that
+/// implements [`Display`].
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_separated_display_list(|| 'a'..'e', '*');
+///
+/// assert_eq!(format!("{fmt:?}"), "a*b*c*d");
+/// assert_eq!(format!("{fmt}"), "a*b*c*d");
+/// ```
 pub const fn fmt_separated_display_list<F, S, I>(values_fn: F, separator: S) -> FmtSeparatedDisplayList<F, S>
 where
     F: Fn() -> I,
@@ -178,7 +198,9 @@ mod tests {
             let unsized_fmt: &FmtSeparatedDebugList<dyn Fn() -> &'static [Foo], Bar> = &fmt;
 
             assert_eq!(std::format!("{fmt:?}"), expected);
+            assert_eq!(std::format!("{fmt}"), expected);
             assert_eq!(std::format!("{unsized_fmt:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt}"), expected);
         }
     }
 
@@ -212,7 +234,9 @@ mod tests {
             let fmt = super::fmt_separated_display_list(|| values, Bar);
             let unsized_fmt: &FmtSeparatedDisplayList<dyn Fn() -> &'static [Foo], Bar> = &fmt;
 
+            assert_eq!(std::format!("{fmt:?}"), expected);
             assert_eq!(std::format!("{fmt}"), expected);
+            assert_eq!(std::format!("{unsized_fmt:?}"), expected);
             assert_eq!(std::format!("{unsized_fmt}"), expected);
         }
     }

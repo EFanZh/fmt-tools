@@ -79,6 +79,15 @@ where
 }
 
 /// Creates an object that [`Debug`] or [`Display`] a list of [`Debug`] objects as a list.
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_debug_list(|| 'a'..'g');
+///
+/// assert_eq!(format!("{fmt:?}"), "['a', 'b', 'c', 'd', 'e', 'f']");
+/// assert_eq!(format!("{fmt}"), "['a', 'b', 'c', 'd', 'e', 'f']");
+/// ```
 pub const fn fmt_debug_list<F, I>(values_fn: F) -> FmtDebugList<F>
 where
     F: Fn() -> I,
@@ -89,6 +98,15 @@ where
 }
 
 /// Creates an object that [`Debug`] or [`Display`] a list of [`Display`] objects as a list.
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_display_list(|| 'a'..'g');
+///
+/// assert_eq!(format!("{fmt:?}"), "[a, b, c, d, e, f]");
+/// assert_eq!(format!("{fmt}"), "[a, b, c, d, e, f]");
+/// ```
 pub const fn fmt_display_list<F, I>(values_fn: F) -> FmtDisplayList<F>
 where
     F: Fn() -> I,
@@ -117,11 +135,13 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_list = super::fmt_debug_list(|| values);
-            let unsized_fmt_list: &FmtDebugList<dyn Fn() -> &'static [Foo]> = &fmt_list;
+            let fmt = super::fmt_debug_list(|| values);
+            let unsized_fmt: &FmtDebugList<dyn Fn() -> &'static [Foo]> = &fmt;
 
-            assert_eq!(std::format!("{fmt_list:?}"), expected);
-            assert_eq!(std::format!("{unsized_fmt_list:?}"), expected);
+            assert_eq!(std::format!("{fmt:?}"), expected);
+            assert_eq!(std::format!("{fmt}"), expected);
+            assert_eq!(std::format!("{unsized_fmt:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt}"), expected);
         }
     }
 
@@ -144,11 +164,13 @@ mod tests {
         ];
 
         for (values, expected) in test_cases {
-            let fmt_list = super::fmt_display_list(|| values);
-            let unsized_fmt_list: &FmtDisplayList<dyn Fn() -> &'static [Foo]> = &fmt_list;
+            let fmt = super::fmt_display_list(|| values);
+            let unsized_fmt: &FmtDisplayList<dyn Fn() -> &'static [Foo]> = &fmt;
 
-            assert_eq!(std::format!("{fmt_list}"), expected);
-            assert_eq!(std::format!("{unsized_fmt_list}"), expected);
+            assert_eq!(std::format!("{fmt:?}"), expected);
+            assert_eq!(std::format!("{fmt}"), expected);
+            assert_eq!(std::format!("{unsized_fmt:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt}"), expected);
         }
     }
 }

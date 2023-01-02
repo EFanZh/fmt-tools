@@ -90,6 +90,15 @@ where
 }
 
 /// Creates an object that [`Debug`] or [`Display`] a list of `(Debug, Debug)` objects as a map.
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_debug_map(|| ('a'..'d').zip('x'..));
+///
+/// assert_eq!(format!("{fmt:?}"), "{'a': 'x', 'b': 'y', 'c': 'z'}");
+/// assert_eq!(format!("{fmt}"), "{'a': 'x', 'b': 'y', 'c': 'z'}");
+/// ```
 pub const fn fmt_debug_map<F, I, K, V>(values_fn: F) -> FmtDebugMap<F>
 where
     F: Fn() -> I,
@@ -101,6 +110,15 @@ where
 }
 
 /// Creates an object that [`Debug`] or [`Display`] a list of `(Display, Display)` objects as a map.
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_display_map(|| ('a'..'d').zip('x'..));
+///
+/// assert_eq!(format!("{fmt:?}"), "{a: x, b: y, c: z}");
+/// assert_eq!(format!("{fmt}"), "{a: x, b: y, c: z}");
+/// ```
 pub const fn fmt_display_map<F, I, K, V>(values_fn: F) -> FmtDisplayMap<F>
 where
     F: Fn() -> I,
@@ -137,7 +155,9 @@ mod tests {
             let unsized_fmt_map: &FmtDebugMap<dyn Fn() -> _> = &fmt_map;
 
             assert_eq!(std::format!("{fmt_map:?}"), expected);
+            assert_eq!(std::format!("{fmt_map}"), expected);
             assert_eq!(std::format!("{unsized_fmt_map:?}"), expected);
+            assert_eq!(std::format!("{unsized_fmt_map}"), expected);
         }
     }
 
@@ -171,7 +191,9 @@ mod tests {
             let fmt_map = super::fmt_display_map(|| values.iter().map(|(key, value)| (key, value)));
             let unsized_fmt_map: &FmtDisplayMap<dyn Fn() -> _> = &fmt_map;
 
+            assert_eq!(std::format!("{fmt_map:?}"), expected);
             assert_eq!(std::format!("{fmt_map}"), expected);
+            assert_eq!(std::format!("{unsized_fmt_map:?}"), expected);
             assert_eq!(std::format!("{unsized_fmt_map}"), expected);
         }
     }

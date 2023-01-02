@@ -1,6 +1,6 @@
 use core::fmt::{self, Debug, Display, Formatter};
 
-/// [`Debug`] or [`Display`] a value based on a function.
+/// Implements [`Debug`] and [`Display`] based on a function object.
 pub struct FmtFn<F>
 where
     F: ?Sized,
@@ -32,7 +32,16 @@ where
     }
 }
 
-/// Creates an object that [`Debug`] or [`Display`] a value based on the `f` function.
+/// Creates an object that implements [`Debug`] and [`Display`] based on the provided function object.
+///
+/// Example:
+///
+/// ```rust
+/// let fmt = fmt_tools::fmt_fn(|f| f.write_str("foo"));
+///
+/// assert_eq!(format!("{fmt:?}"), "foo");
+/// assert_eq!(format!("{fmt}"), "foo");
+/// ```
 pub const fn fmt_fn<F>(f: F) -> FmtFn<F>
 where
     F: Fn(&mut Formatter) -> fmt::Result,
@@ -47,17 +56,17 @@ mod tests {
 
     #[test]
     fn test_fmt_fn() {
-        let fmt_fn = super::fmt_fn(|f| f.write_str("foo"));
+        let fmt = super::fmt_fn(|f| f.write_str("foo"));
 
-        assert_eq!(std::format!("{fmt_fn:?}"), "foo");
-        assert_eq!(std::format!("{fmt_fn}"), "foo");
+        assert_eq!(std::format!("{fmt:?}"), "foo");
+        assert_eq!(std::format!("{fmt}"), "foo");
     }
 
     #[test]
     fn test_coerce_unsized() {
-        let fmt_fn: &FmtFn<dyn Fn(&mut Formatter) -> fmt::Result> = &super::fmt_fn(|f| f.write_str("foo"));
+        let fmt: &FmtFn<dyn Fn(&mut Formatter) -> fmt::Result> = &super::fmt_fn(|f| f.write_str("foo"));
 
-        assert_eq!(std::format!("{fmt_fn:?}"), "foo");
-        assert_eq!(std::format!("{fmt_fn}"), "foo");
+        assert_eq!(std::format!("{fmt:?}"), "foo");
+        assert_eq!(std::format!("{fmt}"), "foo");
     }
 }
